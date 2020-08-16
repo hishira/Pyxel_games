@@ -16,25 +16,30 @@ class Snake:
         self.endPosition = [self.x, self.y, ""]
         self.savePosition = [self.x, self.y, ""]
 
+    def snakeReset(self):
+        self.snakeParts = []
+        self.x = WIDTH / 2
+        self.y = HEIGHT / 2
+        self.snakeParts.append([self.x, self.y, ""])
+        self.endPosition = [self.x, self.y, ""]
+        self.savePosition = [self.x, self.y, ""]
+    
     def snakeUpdateMovement(self, direction):
         old_val_x = self.snakeParts[0][0]
         old_val_y = self.snakeParts[0][1]
         old_destiny = self.snakeParts[0][2]
+
         if direction == "N":
-            self.snakeParts[0][1] = (self.snakeParts[0][1] -
-                                     self.snakeMovement) % pyxel.height
+            self.snakeParts[0][1] = (self.snakeParts[0][1] - self.snakeMovement) % pyxel.height
             self.snakeParts[0][2] = "N"
         elif direction == "E":
-            self.snakeParts[0][0] = (self.snakeParts[0][0] +
-                                     self.snakeMovement) % pyxel.width
+            self.snakeParts[0][0] = (self.snakeParts[0][0] + self.snakeMovement) % pyxel.width
             self.snakeParts[0][2] = "E"
         elif direction == "S":
-            self.snakeParts[0][1] = (self.snakeParts[0][1] +
-                                     self.snakeMovement) % pyxel.height
+            self.snakeParts[0][1] = (self.snakeParts[0][1] + self.snakeMovement) % pyxel.height
             self.snakeParts[0][2] = "E"
         else:
-            self.snakeParts[0][0] = (self.snakeParts[0][0] -
-                                     self.snakeMovement) % pyxel.width
+            self.snakeParts[0][0] = (self.snakeParts[0][0] - self.snakeMovement) % pyxel.width
             self.snakeParts[0][2] = "W"
         for i in range(1, len(self.snakeParts)):
             save_x = self.snakeParts[i][0]
@@ -53,30 +58,72 @@ class Snake:
     def createNewPartOfSnake(self):
         if self.endPosition[2] == "N":
             newPartOfSnakeX = self.endPosition[0]
-            newPartOfSnakeY = self.endPosition[1] + 8
+            newPartOfSnakeY = self.endPosition[1] 
             self.snakeParts.append([newPartOfSnakeX, newPartOfSnakeY, "W"])
         elif self.endPosition[2] == "E":
-            newPartOfSnakeX = self.endPosition[0] + 8
+            newPartOfSnakeX = self.endPosition[0] 
             newPartOfSnakeY = self.endPosition[1]
             self.snakeParts.append([newPartOfSnakeX, newPartOfSnakeY, "W"])
         elif self.endPosition[2] == "S":
             newPartOfSnakeX = self.endPosition[0]
-            newPartOfSnakeY = self.endPosition[1] - 8
+            newPartOfSnakeY = self.endPosition[1] 
             self.snakeParts.append([newPartOfSnakeX, newPartOfSnakeY, "W"])
         else:
-            newPartOfSnakeX = self.endPosition[0] - 8
+            newPartOfSnakeX = self.endPosition[0] 
             newPartOfSnakeY = self.endPosition[1]
             self.snakeParts.append([newPartOfSnakeX, newPartOfSnakeY, "W"])
      
     def drawSnake(self):
+        counter = 0
         for i in self.snakeParts:
-            pyxel.rect(i[0], i[1], 4, 4, 4)
+            if counter == 0:
+                pyxel.rect(i[0], i[1], 4, 4, 10)
+                counter+=1
+            else:
+                pyxel.rect(i[0], i[1], 4, 4, 4)
 
     def getSnakePartX(self,index):
         return self.snakeParts[index][0]
     
     def getSnakePartY(self,index):
         return self.snakeParts[index][1]
+
+
+class Block:
+    def __init__(self):
+        '''
+        Class represent blocks which will be a handicap for a snake
+        '''
+        self.numberOfBlock = 0
+        self.blocks = []
+        self.blockArrangement()
+
+    def blockArrangement(self):
+        x_block = randint(5,pyxel.width - 10)
+        y_block = randint(5,pyxel.height - 10)
+        self.blocks.append([x_block,y_block,4,8])
+        while len(self.blocks) < 10:
+            x_block = randint(5,pyxel.width - 10)
+            y_block = randint(5,pyxel.height - 10)
+            if [x_block,y_block] in self.blocks:
+                continue
+            probability = randint(0,10)
+            if probability < 5:
+                self.blocks.append([x_block,y_block,4,8])
+            else:
+                self.blocks.append([x_block,y_block,8,4])
+    
+    def getBlocks(self):
+        return self.blocks
+    
+    def draw(self):
+        for i in self.blocks:
+            pyxel.rect(i[0],i[1],i[2],i[3],1)
+
+    def resetBlocks(self):
+        self.numberOfBlock = 0
+        self.blocks = []
+        self.blockArrangement()
 class App:
     def __init__(self):
         pyxel.init(WIDTH, HEIGHT, quit_key=pyxel.KEY_Q)
@@ -84,7 +131,7 @@ class App:
         self.numberOfFood = 0
         self.food = []
         self.snake = Snake(WIDTH, HEIGHT)
-
+        self.block = Block()
         pyxel.run(self.update, self.draw)
 
     def update(self):
@@ -92,20 +139,33 @@ class App:
         self.snake.snakeUpdateMovement(self.direction)
         self.checkCollisionSnakeWithFood()
         self.checkFoodAndUpdate()
+        self.checkCollisionWithBlock()
 
     def collisionStatement(self, foodx, foody, snakeheadx, snakeheady,
-                           foodWidht, snakeWidht):
+                           foodWidht, snakeWidht,foodHeight,snakeHeight):
         if (foodx < snakeheadx + snakeWidht and foodx + foodWidht > snakeheadx
-                and foody < snakeheady + snakeWidht
-                and foody + foodWidht > snakeheady):
+                and foody < snakeheady + snakeHeight
+                and foody + foodHeight > snakeheady):
             return True
         return False
+    
+    def checkCollisionWithBlock(self):
+        for i in self.block.getBlocks():
+            if self.collisionStatement(i[0],i[1],self.snake.getSnakePartX(0),
+                                            self.snake.getSnakePartY(0),i[2],4,i[3],4):
+                self.resetGame()
+                print("RESET")
+                break
+                
+    def resetGame(self):
+        self.snake.snakeReset()
+        self.block.resetBlocks()
 
     def checkCollisionSnakeWithFood(self):
         count = 0
         for i in self.food:
             if self.collisionStatement(i[0], i[1], self.snake.getSnakePartX(0),
-                                       self.snake.getSnakePartY(0), 1.5, 4):
+                                       self.snake.getSnakePartY(0), 1.5, 4,1.5,4):
                 del self.food[count]
                 self.snake.createNewPartOfSnake()
                 self.numberOfFood -= 1
@@ -138,6 +198,7 @@ class App:
         pyxel.cls(0)
         self.snake.drawSnake()
         self.drawFood()
+        self.block.draw()
 
 
 App()
