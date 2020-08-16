@@ -28,7 +28,7 @@ class Snake:
         old_val_x = self.snakeParts[0][0]
         old_val_y = self.snakeParts[0][1]
         old_destiny = self.snakeParts[0][2]
-
+        
         if direction == "N":
             self.snakeParts[0][1] = (self.snakeParts[0][1] - self.snakeMovement) % pyxel.height
             self.snakeParts[0][2] = "N"
@@ -37,7 +37,7 @@ class Snake:
             self.snakeParts[0][2] = "E"
         elif direction == "S":
             self.snakeParts[0][1] = (self.snakeParts[0][1] + self.snakeMovement) % pyxel.height
-            self.snakeParts[0][2] = "E"
+            self.snakeParts[0][2] = "S"
         else:
             self.snakeParts[0][0] = (self.snakeParts[0][0] - self.snakeMovement) % pyxel.width
             self.snakeParts[0][2] = "W"
