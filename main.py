@@ -156,6 +156,12 @@ class App:
                 self.resetGame()
                 print("RESET")
                 break
+    
+    def checkCollisionBlockAndFood(self,xfood,yfood,widhtfood,heightfood):
+        for i in self.block.getBlocks():
+            if self.collisionStatement(i[0],i[1],xfood,yfood,i[2],widhtfood,i[3],heightfood):
+                return True
+        return False
                 
     def resetGame(self):
         self.snake.snakeReset()
@@ -176,6 +182,9 @@ class App:
         if self.numberOfFood == 0 or self.numberOfFood < 5:
             x_food = randint(5, pyxel.width - 5)
             y_food = randint(5, pyxel.height - 5)
+            while self.checkCollisionBlockAndFood(x_food,y_food,1.5,1.5) == True:
+                x_food = randint(5, pyxel.width - 5)
+                y_food = randint(5, pyxel.height - 5)
             print(x_food, y_food)
             self.food.append((x_food, y_food))
             self.numberOfFood += 1
