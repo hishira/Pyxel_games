@@ -9,7 +9,7 @@ DIRECTION = "N"
 class Snake:
     def __init__(self, width, height):
         self.snakeParts = []
-        self.snakeMovement = 1
+        self.snakeMovement = 1.5
         self.x = width / 2
         self.y = height / 2
         self.snakeParts.append([self.x, self.y, ""])
@@ -190,18 +190,18 @@ class App:
             self.numberOfFood += 1
 
     def movementCheck(self):
-        if pyxel.btnp(pyxel.KEY_LEFT):
+        if pyxel.btnp(pyxel.KEY_LEFT) and self.direction != "E":
             self.direction = "W"
-        if pyxel.btnp(pyxel.KEY_RIGHT):
+        if pyxel.btnp(pyxel.KEY_RIGHT) and self.direction != "W":
             self.direction = "E"
-        if pyxel.btnp(pyxel.KEY_UP):
+        if pyxel.btnp(pyxel.KEY_UP) and self.direction != "S":
             self.direction = "N"
-        if pyxel.btnp(pyxel.KEY_DOWN):
+        if pyxel.btnp(pyxel.KEY_DOWN) and self.direction != "N":
             self.direction = "S"
 
     def drawFood(self):
         for i in self.food:
-            pyxel.circ(i[0], i[1], 1.5, 9)
+            pyxel.rect(i[0], i[1], 3,3, 9)
 
     def draw(self):
         pyxel.cls(0)
