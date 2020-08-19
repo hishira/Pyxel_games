@@ -7,16 +7,24 @@ class Ship:
     def draw(self):
         for i in self.blocks:
             pyxel.rect(i[0],i[1],i[2],i[2],1)
-        
+    
+    def shipMovement(self):
+        print(pyxel.frame_count)
+        if pyxel.btnp(pyxel.KEY_LEFT,hold=1,period=1):
+            for i in self.blocks:
+                i[0] -= 4 
+        if pyxel.btnp(pyxel.KEY_RIGHT,hold=1,period=1):
+            for i in self.blocks:
+                i[0] += 4 
+
 class App:
     def __init__(self):
         self.ship = Ship()
         pyxel.init(150,120,quit_key=pyxel.KEY_Q)
         pyxel.run(self.update,self.draw)
         
-    
     def update(self):
-        pass
+        self.ship.shipMovement()
     
     def draw(self):
         pyxel.cls(5)
