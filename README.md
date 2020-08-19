@@ -1,1 +1,1 @@
-Snake game using pyxel engine
+Mini games using pyxel engine, python
