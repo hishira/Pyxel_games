@@ -48,7 +48,7 @@ class Alien:
         y = 5
         betpas = 2
         for i in range(80):
-            self.firstWave.append([x,y,3])
+            self.firstWave.append([x,y,4])
             x += 5 + betpas
             if i == 19:
                 y+=5
@@ -80,7 +80,10 @@ class Alien:
 
     def drawFirstWave(self):
         for i in self.firstWave:
-            pyxel.rect(i[0],i[1],self.firstWaveWidth,self.firstWaveHeight,1)
+            if i[2] <= 2:
+                pyxel.rect(i[0],i[1],self.firstWaveWidth - 1,self.firstWaveHeight ,1)
+            else:    
+                pyxel.rect(i[0],i[1],self.firstWaveWidth,self.firstWaveHeight,1)
 class Ship:
     def __init__(self):
         self.blocks = [[80,110,4],[84,110,4],[76,110,4],[80,106,4]]
