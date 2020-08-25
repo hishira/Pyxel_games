@@ -28,6 +28,15 @@ class Bullet:
 
     def bulletRemove(self,index):
         self.bullets.pop(index)
+    
+    def removeUnusedBullets(self):
+        counter = 0
+        for i in self.getBulletPosition():
+            if i[1] < 0:
+                self.bulletRemove(counter)
+                counter-=1
+            counter+=1
+
 class Alien:
     def __init__(self):
         self.firstWave = []
@@ -39,7 +48,7 @@ class Alien:
         y = 5
         betpas = 2
         for i in range(80):
-            self.firstWave.append([x,y])
+            self.firstWave.append([x,y,3])
             x += 5 + betpas
             if i == 19:
                 y+=5
@@ -62,6 +71,12 @@ class Alien:
 
     def firstWaveRemove(self,index):
         self.firstWave.pop(index)
+    
+    def getLifeOfFirstWave(self,index):
+        return self.firstWave[index][2]
+    
+    def setLifeFirstWave(self,index,value):
+        self.firstWave[index][2] = value
 
     def drawFirstWave(self):
         for i in self.firstWave:
@@ -101,6 +116,8 @@ class App:
         self.ship.checkShot()
         self.ship.bullets.updateBulletMovement()
         self.checkCollisionBulletBlock()
+        if pyxel.frame_count % 50 == 0:
+            self.ship.bullets.removeUnusedBullets()
     
     def checkCollisionBlock(self,rect1x,rect1y,rect1width,rect1height,
                             rect2x,rect2y,rect2width,rect2height):
@@ -119,12 +136,15 @@ class App:
                 if self.checkCollisionBlock(i[0],i[1],self.alien.getFirstWaveWidth(),self.alien.getFirstWaveHieght(),
                         j[0],j[1],self.ship.bullets.getBulletWidht(),self.ship.bullets.getBulletHeight()):
                         self.ship.bullets.bulletRemove(bullet_counter)
-                        self.alien.firstWaveRemove(alien_counter)
+                        self.alien.setLifeFirstWave(alien_counter,self.alien.getLifeOfFirstWave(alien_counter) - 1)
+                        if self.alien.getLifeOfFirstWave(alien_counter) == 0:
+                            self.alien.firstWaveRemove(alien_counter)
                         return
                 alien_counter+=1
             bullet_counter+=1
             alien_counter = 0
-        print(len(self.alien.getFirstWavePositions()))
+        print("Pociski : " + str(len(self.ship.bullets.getBulletPosition())))
+
     def draw(self):
         pyxel.cls(5)
         self.ship.draw()
