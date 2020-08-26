@@ -1,5 +1,9 @@
 import pyxel
+from random import randint
 
+
+WIDTH = 150
+HEIGHT = 120
 class Bullet:
     def __init__(self):
         self.bullets = []
@@ -42,6 +46,20 @@ class Alien:
         self.firstWave = []
         self.firstWaveWidth = 4
         self.firstWaveHeight = 2
+        self.firstWaveAlienShip = []
+        self.lastPositionY = 0
+
+    def createFirstWaveShip(self):
+        firstX = randint(10,WIDTH - 10)
+        firstY = self.lastPositionY
+        self.firstWaveAlienShip.append([firstX,firstY])
+        secodX = randint(10,WIDTH - 10)
+        while (secodX < firstX + 4 and secodX < firstX - 4)  or secodX == firstX:
+            secodX = randint(10,WIDTH - 10)
+        self.firstWaveAlienShip.append([secodX,firstY])
+    def drawFirstWaveAlienShip(self):
+        for i in self.firstWaveAlienShip:
+            pyxel.tri(i[0],i[1],i[0] + 2,i[1] + 2,i[0] + 4,i[1],4)
     
     def createFirstWave(self):
         x = 6
@@ -59,6 +77,7 @@ class Alien:
             elif i == 59:
                 y+=5
                 x = 6
+        self.lastPositionY = y + 5
     
     def getFirstWavePositions(self):
         return self.firstWave
@@ -94,7 +113,7 @@ class Ship:
             pyxel.rect(i[0],i[1],i[2],i[2],1)
     
     def checkShot(self):
-        if pyxel.btnp(pyxel.KEY_SPACE,hold=1,period=1):
+        if pyxel.btnp(pyxel.KEY_SPACE,hold=3,period=3):
             self.bullets.createBullet(self.blocks[3][0],self.blocks[3][1])
 
     def shipMovement(self):
@@ -111,7 +130,8 @@ class App:
         self.ship = Ship()
         self.alien = Alien()
         self.alien.createFirstWave()
-        pyxel.init(150,120,quit_key=pyxel.KEY_Q)
+        self.alien.createFirstWaveShip()
+        pyxel.init(WIDTH,HEIGHT,quit_key=pyxel.KEY_Q)
         pyxel.run(self.update,self.draw)
         
     def update(self):
@@ -153,4 +173,5 @@ class App:
         self.ship.draw()
         self.ship.bullets.drawBullets()
         self.alien.drawFirstWave()
+        self.alien.drawFirstWaveAlienShip()
 App()
