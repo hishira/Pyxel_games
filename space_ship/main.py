@@ -48,10 +48,11 @@ class Alien:
         self.firstWaveHeight = 2
         self.firstWaveAlienShip = []
         self.lastPositionY = 0
+        self.firstWaveAlienBullet = []
 
     def createFirstWaveShip(self):
         firstX = randint(10,WIDTH - 10)
-        firstY = self.lastPositionY
+        firstY = self.lastPositionY + 5
         self.firstWaveAlienShip.append([firstX,firstY,"R"])
         secodX = randint(10,WIDTH - 10)
         while (secodX < firstX + 4 and secodX > firstX - 4)  or secodX == firstX:
@@ -65,9 +66,24 @@ class Alien:
             elif i[0] <= 0 and i[2] == "L":
                 i[2] = "R"
             elif i[2]  == "R":
-                i[0] += 2
+                i[0] += 3
             else:
                 i[0] -= 2
+    
+    def bulletFirstWaveAlienShip(self):
+        chooser = randint(0,20)
+        if chooser < 10:
+            self.firstWaveAlienBullet.append([self.firstWaveAlienShip[0][0] + 2,self.firstWaveAlienShip[0][1] + 2])
+        else:
+            self.firstWaveAlienBullet.append([self.firstWaveAlienShip[1][0] + 2,self.firstWaveAlienShip[1][1] + 2])
+    
+    def updateFirstAlienWAveMovement(self):
+        for i in self.firstWaveAlienBullet:
+            i[1] += 1
+
+    def drawAlienFirstWaveBullet(self):
+        for i in self.firstWaveAlienBullet:
+            pyxel.line(i[0],i[1],i[0],i[1] + 2,4)
 
     def drawFirstWaveAlienShip(self):
         for i in self.firstWaveAlienShip:
@@ -152,7 +168,9 @@ class App:
         self.ship.bullets.updateBulletMovement()
         self.checkCollisionBulletBlock()
         self.alien.firstWaveShipMovement()
-
+        if pyxel.frame_count % 10 == 0:
+            self.alien.bulletFirstWaveAlienShip()
+        self.alien.updateFirstAlienWAveMovement()
         if pyxel.frame_count % 50 == 0:
             self.ship.bullets.removeUnusedBullets()
     
@@ -188,4 +206,5 @@ class App:
         self.ship.bullets.drawBullets()
         self.alien.drawFirstWave()
         self.alien.drawFirstWaveAlienShip()
+        self.alien.drawAlienFirstWaveBullet()
 App()
