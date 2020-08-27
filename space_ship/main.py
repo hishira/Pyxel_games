@@ -52,11 +52,23 @@ class Alien:
     def createFirstWaveShip(self):
         firstX = randint(10,WIDTH - 10)
         firstY = self.lastPositionY
-        self.firstWaveAlienShip.append([firstX,firstY])
+        self.firstWaveAlienShip.append([firstX,firstY,"R"])
         secodX = randint(10,WIDTH - 10)
-        while (secodX < firstX + 4 and secodX < firstX - 4)  or secodX == firstX:
+        while (secodX < firstX + 4 and secodX > firstX - 4)  or secodX == firstX:
             secodX = randint(10,WIDTH - 10)
-        self.firstWaveAlienShip.append([secodX,firstY])
+        self.firstWaveAlienShip.append([secodX,firstY,"R"])
+    
+    def firstWaveShipMovement(self):
+        for i in self.firstWaveAlienShip:
+            if i[0] > WIDTH - 5 and i[2] == "R":
+                i[2] = "L"
+            elif i[0] <= 0 and i[2] == "L":
+                i[2] = "R"
+            elif i[2]  == "R":
+                i[0] += 2
+            else:
+                i[0] -= 2
+
     def drawFirstWaveAlienShip(self):
         for i in self.firstWaveAlienShip:
             pyxel.tri(i[0],i[1],i[0] + 2,i[1] + 2,i[0] + 4,i[1],4)
@@ -139,6 +151,8 @@ class App:
         self.ship.checkShot()
         self.ship.bullets.updateBulletMovement()
         self.checkCollisionBulletBlock()
+        self.alien.firstWaveShipMovement()
+
         if pyxel.frame_count % 50 == 0:
             self.ship.bullets.removeUnusedBullets()
     
