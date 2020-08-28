@@ -4,6 +4,7 @@ from random import randint
 
 WIDTH = 150
 HEIGHT = 120
+GAME_POINT = 0.0
 class Bullet:
     def __init__(self):
         self.bullets = []
@@ -133,7 +134,7 @@ class Alien:
                 pyxel.rect(i[0],i[1],self.firstWaveWidth,self.firstWaveHeight,1)
 class Ship:
     def __init__(self):
-        self.blocks = [[80,110,4],[84,110,4],[76,110,4],[80,106,4]]
+        self.blocks = [[80,110,3],[83,110,3],[77,110,3],[80,107,3]]
         self.bullets = Bullet()
 
     def draw(self):
@@ -192,6 +193,8 @@ class App:
                         j[0],j[1],self.ship.bullets.getBulletWidht(),self.ship.bullets.getBulletHeight()):
                         self.ship.bullets.bulletRemove(bullet_counter)
                         self.alien.setLifeFirstWave(alien_counter,self.alien.getLifeOfFirstWave(alien_counter) - 1)
+                        global GAME_POINT
+                        GAME_POINT += 0.4
                         if self.alien.getLifeOfFirstWave(alien_counter) == 0:
                             self.alien.firstWaveRemove(alien_counter)
                         return
@@ -207,4 +210,5 @@ class App:
         self.alien.drawFirstWave()
         self.alien.drawFirstWaveAlienShip()
         self.alien.drawAlienFirstWaveBullet()
+        pyxel.text(0,115,"{0:02f}".format(GAME_POINT),1)
 App()
