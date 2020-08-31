@@ -17,7 +17,7 @@ class Bullet:
     
     def updateBulletMovement(self):
         for i in self.bullets:
-            i[1]-=6
+            i[1]-=2
 
     def getBulletWidht(self):
         return self.bulletWidth
@@ -83,6 +83,9 @@ class Alien:
         for i in self.firstWaveAlienBullet:
             i[1] += 1
     
+    def resetAlienFirstWave(self):
+        self.firstWave = []
+
     def drawAlienFirstWaveBullet(self):
         for i in self.firstWaveAlienBullet:
             pyxel.line(i[0],i[1],i[0],i[1] + 2,4)
@@ -170,14 +173,18 @@ class App:
         self.alien = Alien()
         self.alien.createFirstWave()
         self.alien.createFirstWaveShip()
+        self.game_over = False
+        self.userRestartChoice = "YES"
         pyxel.init(WIDTH,HEIGHT,quit_key=pyxel.KEY_Q)
         pyxel.run(self.update,self.draw)
         
+        
+    
     def update(self):
         self.ship.shipMovement()
         self.ship.checkShot()
-        self.ship.bullets.updateBulletMovement()
         self.checkCollisionBulletBlock()
+        self.ship.bullets.updateBulletMovement()
         self.alien.firstWaveShipMovement()
         if pyxel.frame_count % 10 == 0:
             self.alien.bulletFirstWaveAlienShip()
@@ -202,6 +209,8 @@ class App:
                 if self.checkCollisionBlock(i[0],i[1],1,2,j[0],j[1],3,3):
                     global SHIP_LIFE
                     SHIP_LIFE-=1
+                    if SHIP_LIFE == 0:
+                        self.game_over = True
                     self.alien.removeFirstWaveAlienBullet(counter)
                     return
             counter+=1
@@ -212,8 +221,8 @@ class App:
         bullet_counter = 0
         for i in self.ship.bullets.getBulletPosition():
             for j in self.alien.getFirstWavePositions():    
-                if self.checkCollisionBlock(i[0],i[1],self.alien.getFirstWaveWidth(),self.alien.getFirstWaveHieght(),
-                        j[0],j[1],self.ship.bullets.getBulletWidht(),self.ship.bullets.getBulletHeight()):
+                if self.checkCollisionBlock(i[0],i[1],self.ship.bullets.getBulletWidht(),self.ship.bullets.getBulletHeight(),
+                        j[0],j[1],self.alien.getFirstWaveWidth(),self.alien.getFirstWaveHieght()):
                         self.ship.bullets.bulletRemove(bullet_counter)
                         self.alien.setLifeFirstWave(alien_counter,self.alien.getLifeOfFirstWave(alien_counter) - 1)
                         global GAME_POINT
@@ -226,13 +235,42 @@ class App:
             alien_counter = 0
         print("Pociski : " + str(len(self.ship.bullets.getBulletPosition())))
 
-    def draw(self):
-        pyxel.cls(5)
+    def drawGameMode(self):
         self.ship.draw()
         self.ship.bullets.drawBullets()
         self.alien.drawFirstWave()
         self.alien.drawFirstWaveAlienShip()
         self.alien.drawAlienFirstWaveBullet()
         pyxel.text(0,115,"{0:02f}".format(GAME_POINT),1)
-        pyxel.text(100,115,"{}".format(SHIP_LIFE),1)
+        pyxel.text(140,115,"{}".format(SHIP_LIFE),1)
+    
+
+    def resetGame(self):
+        self.alien.resetAlienFirstWave()
+        self.alien.createFirstWave()
+
+    def userChoiceRestartChange(self):
+        if pyxel.btnp(pyxel.KEY_RIGHT):
+            self.userRestartChoice = "NO"
+        if pyxel.btnp(pyxel.KEY_LEFT):
+            self.userRestartChoice = "YES"
+        if pyxel.btnp(pyxel.KEY_ENTER):
+            if self.userRestartChoice == "YES":
+                self.game_over = False
+                self.resetGame()
+                
+    def draw(self):
+        pyxel.cls(5)
+        if not self.game_over:
+            self.drawGameMode()
+        else:
+            self.userChoiceRestartChange()
+            pyxel.text(58,55,"GAME OVER",9)
+            pyxel.text(60,65,"RESTART?",9)
+            pyxel.text(58,75,"YES    NO",9)
+            if self.userRestartChoice == "YES":
+                pyxel.rectb(55,73,15,9,6)
+            else:
+                pyxel.rectb(80,73,15,9,6)
+
 App()
