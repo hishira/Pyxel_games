@@ -5,6 +5,7 @@ from random import randint
 WIDTH = 150
 HEIGHT = 120
 GAME_POINT = 0.0
+SHIP_LIFE = 3
 class Bullet:
     def __init__(self):
         self.bullets = []
@@ -81,7 +82,7 @@ class Alien:
     def updateFirstAlienWAveMovement(self):
         for i in self.firstWaveAlienBullet:
             i[1] += 1
-
+    
     def drawAlienFirstWaveBullet(self):
         for i in self.firstWaveAlienBullet:
             pyxel.line(i[0],i[1],i[0],i[1] + 2,4)
@@ -90,6 +91,12 @@ class Alien:
         for i in self.firstWaveAlienShip:
             pyxel.tri(i[0],i[1],i[0] + 2,i[1] + 2,i[0] + 4,i[1],4)
     
+    def getFirstAlienBulletWave(self):
+        return self.firstWaveAlienBullet
+    
+    def removeFirstWaveAlienBullet(self,index):
+        return self.firstWaveAlienBullet.pop(index)
+
     def createFirstWave(self):
         x = 6
         y = 5
@@ -145,6 +152,9 @@ class Ship:
         if pyxel.btnp(pyxel.KEY_SPACE,hold=3,period=3):
             self.bullets.createBullet(self.blocks[3][0],self.blocks[3][1])
 
+    def getShipPossition(self):
+        return self.blocks
+        
     def shipMovement(self):
         print(pyxel.frame_count)
         if pyxel.btnp(pyxel.KEY_LEFT,hold=1,period=1):
@@ -174,7 +184,8 @@ class App:
         self.alien.updateFirstAlienWAveMovement()
         if pyxel.frame_count % 50 == 0:
             self.ship.bullets.removeUnusedBullets()
-    
+        self.checkCollisionBulletShip()
+
     def checkCollisionBlock(self,rect1x,rect1y,rect1width,rect1height,
                             rect2x,rect2y,rect2width,rect2height):
         if (rect1x < rect2x + rect2width and
@@ -183,6 +194,18 @@ class App:
             rect1y + rect1height > rect2y):
             return True
         return False
+
+    def checkCollisionBulletShip(self):
+        counter = 0
+        for i in self.alien.getFirstAlienBulletWave():
+            for j in self.ship.getShipPossition():
+                if self.checkCollisionBlock(i[0],i[1],1,2,j[0],j[1],3,3):
+                    global SHIP_LIFE
+                    SHIP_LIFE-=1
+                    self.alien.removeFirstWaveAlienBullet(counter)
+                    return
+            counter+=1
+
 
     def checkCollisionBulletBlock(self):
         alien_counter = 0
@@ -211,4 +234,5 @@ class App:
         self.alien.drawFirstWaveAlienShip()
         self.alien.drawAlienFirstWaveBullet()
         pyxel.text(0,115,"{0:02f}".format(GAME_POINT),1)
+        pyxel.text(100,115,"{}".format(SHIP_LIFE),1)
 App()
