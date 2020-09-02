@@ -6,6 +6,7 @@ WIDTH = 150
 HEIGHT = 120
 GAME_POINT = 0.0
 SHIP_LIFE = 3
+BOSS_LIFE = 5
 class Bullet:
     def __init__(self):
         self.bullets = []
@@ -97,6 +98,9 @@ class Alien:
     def getFirstAlienBulletWave(self):
         return self.firstWaveAlienBullet
     
+    def removeAlienFirstWaveBullet(self):
+        self.firstWaveAlienBullet = []
+
     def removeFirstWaveAlienBullet(self,index):
         return self.firstWaveAlienBullet.pop(index)
 
@@ -167,6 +171,55 @@ class Ship:
             for i in self.blocks:
                 i[0] += 1 * 3#(pyxel.frame_count % 7)
 
+class Boss:
+    
+    def __init__(self):
+        pyxel.image(0).load(20,20,"boss.png")
+        self.bossMovement = "R"
+        self.x = 5
+        self.y = 5
+        self.bossBullets = []
+
+    def getBossPosition(self):
+        return (self.x,self.y)
+
+    def draw(self):
+        pyxel.blt(self.x,self.y,0,20,20,20,20,0)
+        self.drawBossBullet()
+
+    def getBossBullet(self):
+        return self.bossBullets
+    
+    def removeBossBullet(self,index):
+        self.bossBullets.pop(index)
+
+    def bossUpdate(self):
+        self.bossMovementUpdate()
+        if pyxel.frame_count % 50 == 0:
+            self.createBossShot()
+        
+    def drawBossBullet(self):
+        for i in self.bossBullets:
+            pyxel.line(i[0],i[1],i[0],i[1]+3,7)
+
+    def bossMovementUpdate(self):
+        print(self.x)
+        if self.x > pyxel.width - 20:
+            self.bossMovement = "L"
+        elif self.x < 5:
+            self.bossMovement = "R"
+        if self.bossMovement == "R":
+            self.x += 4 % (pyxel.frame_count + 1)
+        else:
+            self.x -= 4 % (pyxel.frame_count + 1)
+        self.updateBossBulletMovement()
+
+    def createBossShot(self):
+        self.bossBullets.append([self.x+10,self.y+15])
+    
+    def updateBossBulletMovement(self):
+        for i in self.bossBullets:
+            i[1]+=2
 class App:
     def __init__(self):
         self.ship = Ship()
@@ -175,11 +228,11 @@ class App:
         self.alien.createFirstWaveShip()
         self.game_over = False
         self.userRestartChoice = "YES"
+        self.bossStage = True
         pyxel.init(WIDTH,HEIGHT,quit_key=pyxel.KEY_Q)
+        self.boss = Boss()
         pyxel.run(self.update,self.draw)
-        
-        
-    
+ 
     def update(self):
         self.ship.shipMovement()
         self.ship.checkShot()
@@ -192,6 +245,9 @@ class App:
         if pyxel.frame_count % 50 == 0:
             self.ship.bullets.removeUnusedBullets()
         self.checkCollisionBulletShip()
+        if self.bossStage:
+            self.boss.bossUpdate()
+            self.collisionBossShipBullet()
 
     def checkCollisionBlock(self,rect1x,rect1y,rect1width,rect1height,
                             rect2x,rect2y,rect2width,rect2height):
@@ -201,6 +257,19 @@ class App:
             rect1y + rect1height > rect2y):
             return True
         return False
+
+    def collisionBossShipBullet(self):
+        counter = 0
+        for i in self.boss.getBossBullet():
+            for j in self.ship.getShipPossition():
+                if self.checkCollisionBlock(i[0],i[1],1,3,j[0],j[1],3,3):
+                    global SHIP_LIFE
+                    SHIP_LIFE -= 1
+                    if SHIP_LIFE == 0:
+                        self.game_over = True
+                    self.boss.removeBossBullet(counter)
+                    return
+            counter+=1
 
     def checkCollisionBulletShip(self):
         counter = 0
@@ -243,11 +312,19 @@ class App:
         self.alien.drawAlienFirstWaveBullet()
         pyxel.text(0,115,"{0:02f}".format(GAME_POINT),1)
         pyxel.text(140,115,"{}".format(SHIP_LIFE),1)
-    
+
+    def drawBossStage(self):
+        self.ship.draw()
+        self.ship.bullets.drawBullets()
+        self.boss.draw()
+        pyxel.text(140,115,"{}".format(SHIP_LIFE),1)
 
     def resetGame(self):
         self.alien.resetAlienFirstWave()
         self.alien.createFirstWave()
+        global SHIP_LIFE
+        SHIP_LIFE = 3
+        self.alien.removeAlienFirstWaveBullet()
 
     def userChoiceRestartChange(self):
         if pyxel.btnp(pyxel.KEY_RIGHT):
@@ -258,11 +335,15 @@ class App:
             if self.userRestartChoice == "YES":
                 self.game_over = False
                 self.resetGame()
+            else:
+                pyxel.quit()
                 
     def draw(self):
         pyxel.cls(5)
-        if not self.game_over:
+        if not self.game_over and self.bossStage == False:
             self.drawGameMode()
+        elif self.bossStage:
+            self.drawBossStage()
         else:
             self.userChoiceRestartChange()
             pyxel.text(58,55,"GAME OVER",9)
