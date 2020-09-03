@@ -5,8 +5,9 @@ from random import randint
 WIDTH = 150
 HEIGHT = 120
 GAME_POINT = 0.0
-SHIP_LIFE = 3
+SHIP_LIFE = 10
 BOSS_LIFE = 5
+BOSS_SHOT_DENSITY = 50
 class Bullet:
     def __init__(self):
         self.bullets = []
@@ -125,6 +126,9 @@ class Alien:
     def getFirstWavePositions(self):
         return self.firstWave
     
+    def getFirstWaveLength(self):
+        return len(self.firstWave)
+
     def getFirstWaveWidth(self):
         return self.firstWaveWidth
     
@@ -179,6 +183,7 @@ class Boss:
         self.x = 5
         self.y = 5
         self.bossBullets = []
+        self.bossBullet = 0
 
     def getBossPosition(self):
         return [(self.x,self.y)]
@@ -194,8 +199,13 @@ class Boss:
         self.bossBullets.pop(index)
 
     def bossUpdate(self):
+        global BOSS_SHOT_DENSITY
         self.bossMovementUpdate()
-        if pyxel.frame_count % 50 == 0:
+        if self.getNumberOfBossBullet() > 10:
+            BOSS_SHOT_DENSITY = 10
+        elif self.getNumberOfBossBullet() > 20:
+            BOSS_SHOT_DENSITY = 5
+        if pyxel.frame_count % BOSS_SHOT_DENSITY == 0:
             self.createBossShot()
         
     def drawBossBullet(self):
@@ -216,7 +226,11 @@ class Boss:
 
     def createBossShot(self):
         self.bossBullets.append([self.x+10,self.y+15])
+        self.bossBullet+=1
     
+    def getNumberOfBossBullet(self):
+        return self.bossBullet
+
     def updateBossBulletMovement(self):
         for i in self.bossBullets:
             i[1]+=2
@@ -228,7 +242,7 @@ class App:
         self.alien.createFirstWaveShip()
         self.game_over = False
         self.userRestartChoice = "YES"
-        self.bossStage = True
+        self.bossStage = False
         pyxel.init(WIDTH,HEIGHT,quit_key=pyxel.KEY_Q)
         self.boss = Boss()
         pyxel.run(self.update,self.draw)
@@ -255,6 +269,9 @@ class App:
             if pyxel.frame_count % 50 == 0:
                 self.ship.bullets.removeUnusedBullets()
             self.checkCollisionBulletShip()
+            if self.alien.getFirstWaveLength() == 0:
+                self.bossStage = True
+    
         
 
     def checkCollisionBlock(self,rect1x,rect1y,rect1width,rect1height,
