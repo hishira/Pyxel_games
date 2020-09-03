@@ -6,7 +6,7 @@ WIDTH = 150
 HEIGHT = 120
 GAME_POINT = 0.0
 SHIP_LIFE = 10
-BOSS_LIFE = 5
+BOSS_LIFE = 30
 BOSS_SHOT_DENSITY = 50
 class Bullet:
     def __init__(self):
@@ -249,6 +249,7 @@ class App:
  
     def update(self):
         if self.bossStage:
+            global BOSS_LIFE
             self.boss.bossUpdate()
             self.collisionBossShipBullet()
             self.ship.shipMovement()
@@ -257,6 +258,8 @@ class App:
             if pyxel.frame_count % 50 == 0:
                 self.ship.bullets.removeUnusedBullets()
             self.collisionShipBulletBoss()
+            if BOSS_LIFE == 0:
+                pyxel.quit()
         else:
             self.ship.shipMovement()
             self.ship.checkShot()
