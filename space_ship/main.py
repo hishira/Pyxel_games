@@ -181,7 +181,7 @@ class Boss:
         self.bossBullets = []
 
     def getBossPosition(self):
-        return (self.x,self.y)
+        return [(self.x,self.y)]
 
     def draw(self):
         pyxel.blt(self.x,self.y,0,20,20,20,20,0)
@@ -234,20 +234,28 @@ class App:
         pyxel.run(self.update,self.draw)
  
     def update(self):
-        self.ship.shipMovement()
-        self.ship.checkShot()
-        self.checkCollisionBulletBlock()
-        self.ship.bullets.updateBulletMovement()
-        self.alien.firstWaveShipMovement()
-        if pyxel.frame_count % 10 == 0:
-            self.alien.bulletFirstWaveAlienShip()
-        self.alien.updateFirstAlienWAveMovement()
-        if pyxel.frame_count % 50 == 0:
-            self.ship.bullets.removeUnusedBullets()
-        self.checkCollisionBulletShip()
         if self.bossStage:
             self.boss.bossUpdate()
             self.collisionBossShipBullet()
+            self.ship.shipMovement()
+            self.ship.checkShot()
+            self.ship.bullets.updateBulletMovement()
+            if pyxel.frame_count % 50 == 0:
+                self.ship.bullets.removeUnusedBullets()
+            self.collisionShipBulletBoss()
+        else:
+            self.ship.shipMovement()
+            self.ship.checkShot()
+            self.checkCollisionBulletBlock()
+            self.ship.bullets.updateBulletMovement()
+            self.alien.firstWaveShipMovement()
+            if pyxel.frame_count % 10 == 0:
+                self.alien.bulletFirstWaveAlienShip()
+            self.alien.updateFirstAlienWAveMovement()
+            if pyxel.frame_count % 50 == 0:
+                self.ship.bullets.removeUnusedBullets()
+            self.checkCollisionBulletShip()
+        
 
     def checkCollisionBlock(self,rect1x,rect1y,rect1width,rect1height,
                             rect2x,rect2y,rect2width,rect2height):
@@ -258,6 +266,14 @@ class App:
             return True
         return False
 
+    def collisionShipBulletBoss(self):
+        counter = 0
+        for i in self.ship.bullets.getBulletPosition():
+            for j in self.boss.getBossPosition():
+                if self.checkCollisionBlock(i[0],i[1],1,2,j[0],j[1],20,20):
+                    global BOSS_LIFE
+                    BOSS_LIFE-=1
+                    return
     def collisionBossShipBullet(self):
         counter = 0
         for i in self.boss.getBossBullet():
@@ -318,6 +334,7 @@ class App:
         self.ship.bullets.drawBullets()
         self.boss.draw()
         pyxel.text(140,115,"{}".format(SHIP_LIFE),1)
+        pyxel.text(140,0,"{}".format(BOSS_LIFE),1)
 
     def resetGame(self):
         self.alien.resetAlienFirstWave()
